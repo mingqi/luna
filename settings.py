@@ -1,0 +1,7 @@
+IPTABLE_CHAIN_NAME = 'ALAUDA'
+JAKIRO = {
+    'API_ENDPOINT': '',
+    'INNER_API_ENDPOINT': '',
+    'USER': '',
+    'PASSWORD': ''
+}

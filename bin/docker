@@ -1,0 +1,65 @@
+#!/usr/bin/python
+
+"""
+wrapper script of /usr/bin/docker for mesos slave. We can do some other
+stuff before mesos slave execute docker
+"""
+
+from os.path import join, abspath
+import sys
+import subprocess
+import traceback
+
+ROOT_DIR = abspath(join(__file__, '../../'))
+sys.path.insert(0, ROOT_DIR)
+
+from luna.docker import Run
+
+ACTION_WRAPPER = {
+    'run': Run
+}
+
+
+class EmptyWrapper(object):
+
+    def __init__(self, args):
+        pass
+
+
+if __name__ == '__main__':
+    print "this is docker wrapper"
+    if len(sys.argv) < 2:
+        print 'action is missing'
+        print 'usage: docker ACTION ...'
+        sys.exit(1)
+
+    action = sys.argv[1]
+    if action in ACTION_WRAPPER:
+        wrapper_builder = ACTION_WRAPPER[action]
+    else:
+        wrapper_builder = EmptyWrapper
+
+    try:
+        wrapper = wrapper_builder(sys.argv[2:])
+
+        if hasattr(wrapper, 'before'):
+            wrapper.before()
+
+        if hasattr(wrapper, 'args'):
+            args = wrapper.args()
+        else:
+            args = sys.argv[2:]
+        result_code = subprocess.call(['docker', action] + args,
+                                      stdout=sys.stdout, stderr=sys.stderr)
+    except Exception:
+        sys.exit(255)
+
+    try:
+        # run injection codes after docker command
+        # whatever the result of indection code, script's result code alway be docker command's result
+        if hasattr(wrapper, 'after'):
+            wrapper.after()
+    except Exception, e:
+        traceback.print_exc()
+
+    sys.exit(result_code)
