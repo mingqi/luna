@@ -1,5 +1,5 @@
 import iptc
-
+import string
 
 def get_chain(table, chain):
     for c in iptc.Table(table).chains:
@@ -35,3 +35,16 @@ def rule(**kwargs):
             raise Exception('%s is not llegal rule attrubute' % attr_name)
         setattr(rule, attr_name, attr_value)
     return rule
+
+
+def is_rule_of_mac_source(rule, mac_source_list):
+    mac_source_list = map(string.upper, mac_source_list)
+    if not rule.matches or len(rule.matches) == 0:
+        return False
+
+    if rule.matches and len(rule.matches) > 0:
+        for match in rule.matches:
+            if match.name == 'mac' and \
+               match.mac_source.upper() in mac_source_list:
+                    return True
+    return False

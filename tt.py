@@ -27,7 +27,7 @@ from luna import iptables
 
 from docker import Client
 c = Client(base_url='unix://var/run/docker.sock')
-c.inspect_container('psql')
+print c.containers(quiet=True)
 
 # pprint(c.inspect_container('ppsql')['NetworkSettings']['MacAddress'])
 # pprint(c.inspect_container('sad_franklin'))
