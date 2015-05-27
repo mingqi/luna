@@ -2,8 +2,6 @@
 
 from os.path import join, abspath
 import sys
-import string
-from functools import partial
 
 
 ROOT_DIR = abspath(join(__file__, '../../'))
@@ -13,7 +11,7 @@ from luna import iptables
 from docker import Client as DockerClient
 import settings
 
-docker = DockerClient(base_url='unix://var/run/docker.sock')
+docker = DockerClient(base_url='unix://var/run/docker.sock', version=settings.DOCKER_API_VERSION)
 
 
 if __name__ == '__main__':

@@ -119,7 +119,8 @@ class Wait(object):
     """
 
     def __init__(self, args):
-        docker = DockerClient(base_url='unix://var/run/docker.sock')
+        docker = DockerClient(base_url='unix://var/run/docker.sock',
+                              version=settings.DOCKER_API_VERSION)
         self.mac_address_list = []
         for container in args:
             try:

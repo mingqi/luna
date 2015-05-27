@@ -1,6 +1,7 @@
 import iptc
 import string
 
+
 def get_chain(table, chain):
     for c in iptc.Table(table).chains:
         if c.name == chain:
