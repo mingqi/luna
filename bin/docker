@@ -42,23 +42,25 @@ if __name__ == '__main__':
     try:
         wrapper = wrapper_builder(sys.argv[2:])
 
-        if hasattr(wrapper, 'before'):
-            wrapper.before()
+        if hasattr(wrapper, 'pre_run'):
+            wrapper.pre_run()
 
-        if hasattr(wrapper, 'args'):
-            args = wrapper.args()
+        if hasattr(wrapper, 'to_args'):
+            args = wrapper.to_args()
         else:
             args = sys.argv[2:]
+        print args
         result_code = subprocess.call(['docker', action] + args,
                                       stdout=sys.stdout, stderr=sys.stderr)
     except Exception:
+        traceback.print_exc()
         sys.exit(255)
 
     try:
         # run injection codes after docker command
         # whatever the result of indection code, script's result code alway be docker command's result
-        if hasattr(wrapper, 'after'):
-            wrapper.after()
+        if hasattr(wrapper, 'post_run'):
+            wrapper.post_run()
     except Exception, e:
         traceback.print_exc()
 
