@@ -13,10 +13,11 @@ import traceback
 ROOT_DIR = abspath(join(__file__, '../../'))
 sys.path.insert(0, ROOT_DIR)
 
-from luna.docker import Run
+from luna.wrapper import Run, Wait
 
 ACTION_WRAPPER = {
-    'run': Run
+    'run': Run,
+    'wait': Wait
 }
 
 
@@ -49,7 +50,6 @@ if __name__ == '__main__':
             args = wrapper.to_args()
         else:
             args = sys.argv[2:]
-        print args
         result_code = subprocess.call(['docker', action] + args,
                                       stdout=sys.stdout, stderr=sys.stderr)
     except Exception:
