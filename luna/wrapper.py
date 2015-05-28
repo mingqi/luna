@@ -61,15 +61,19 @@ def getIP(domain_name):
     return socket.gethostbyname(domain_name)
 
 
-def add_allow_rule(ip, port, mac_address):
+def add_allow_rule(protocol, ip, port, mac_address):
     chain = iptables.get_chain('filter', settings.IPTABLE_CHAIN_NAME)
     if not chain:
         chain = iptables.create_chain('filter', settings.IPTABLE_CHAIN_NAME)
     rule = iptables.rule(dst='{}/32'.format(ip),
                          in_interface='docker0',
+                         protocol=protocol,
                          match={
                             'mac': {
                                 'mac-source': mac_address
+                            },
+                            protocol: {
+                                'dport': str(port)
                             }
                          },
                          target='ACCEPT')
@@ -100,14 +104,16 @@ class Run(object):
         namespace = configs['namespace']
         for linked_to_app_name in json.loads(configs['linked_to_apps']).keys():
             detail = service_detail(namespace, linked_to_app_name)
-            service_ip = getIP(detail['default_domain_name'])
-            for instance_port in detail['instance_ports']:
-                service_port = instance_port['service_port']
-        self.allowed.append((service_ip, service_port))
+            # service_ip = getIP(detail['default_domain_name'])
+            for p in detail['instance_ports']:
+                if p['endpoint_type'] == 'internal-endpoint':
+                    self.allowed.append((p['protocol'],
+                                         getIP(p['default_domain']),
+                                         p['service_port']))
 
     def pre_run(self):
-        for ip, port in self.allowed:
-            add_allow_rule(ip, port, self.mac_address)
+        for protocol, ip, port in self.allowed:
+            add_allow_rule(protocol, ip, port, self.mac_address)
 
     def to_args(self):
         return ['--mac-address=%s' % self.mac_address] + self.args
