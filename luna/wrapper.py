@@ -113,7 +113,10 @@ def link_rules_for_service(service_uuid, mac_address):
         detail = service_detail(namespace, linked_to_app_name)
         # service_ip = getIP(detail['default_domain_name'])
         for p in detail['instance_ports']:
-            if p['endpoint_type'] == 'internal-endpoint':
+            endpoint_type = p.get('endpoint_type', None)
+            if not endpoint_type:
+                continue
+            if endpoint_type == 'internal-endpoint':
                 rules.append((p['protocol'],
                               getIP(p['default_domain']),
                               p['service_port'],
