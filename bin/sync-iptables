@@ -2,7 +2,7 @@
 
 from os.path import join, abspath
 import sys
-
+from pprint import pprint
 
 ROOT_DIR = abspath(join(__file__, '../../'))
 sys.path.insert(0, ROOT_DIR)
@@ -10,21 +10,55 @@ sys.path.insert(0, ROOT_DIR)
 from luna import iptables
 from docker import Client as DockerClient
 import settings
+from luna import wrapper
 
 docker = DockerClient(base_url='unix://var/run/docker.sock', version=settings.DOCKER_API_VERSION)
 
 
 if __name__ == '__main__':
+    print "start to sync link rules"
     container_ids = map(lambda x: x['Id'], docker.containers(quiet=True))
-    mac_address_list = map(lambda x: docker.inspect_container(x)['NetworkSettings']['MacAddress'].upper(),
-                           container_ids)
 
-    # cleanup defunct rule
+    def _ext_service_uuid_mac_addr(container_id):
+        inspect = docker.inspect_container(container_id)
+        mac_addr = inspect['NetworkSettings']['MacAddress'].upper()
+        uuid = next((x[len('MARATHON_APP_ID=')+1:] for x in inspect['Config']['Env']
+                     if x.startswith('MARATHON_APP_ID=')), None)
+        if not uuid:
+            return None
+        return (uuid, mac_addr)
+
+    target_rule_set = set()
+    for cid in container_ids:
+        uuid_mac_address = _ext_service_uuid_mac_addr(cid)
+        if uuid_mac_address:
+            target_rule_set.update(wrapper.link_rules_for_service(*uuid_mac_address))
+
+    curr_rule_dict = dict()
     chain = iptables.get_chain('filter', settings.IPTABLE_CHAIN_NAME)
-    if chain:
+    if not chain:
+        chain = iptables.create_chain('filter', settings.IPTABLE_CHAIN_NAME)
+    chain.table.autocommit = False
+    for rule in chain.rules:
+        r = wrapper.conv_rule(rule)
+        if r not in curr_rule_dict:
+            curr_rule_dict[r] = []
+        curr_rule_dict[r].append(rule)
+    curr_rule_set = set(curr_rule_dict.keys())
 
-        def _is_rule_defunct(rule):
-            return not iptables.is_rule_of_mac_source(rule, mac_address_list)
 
-        map(chain.delete_rule,
-            filter(_is_rule_defunct, chain.rules))
+    to_add = target_rule_set - curr_rule_set
+    to_remove = curr_rule_set - target_rule_set
+
+    for rule in to_add:
+        wrapper.add_link_rule(*rule)
+
+    for link_rule in to_remove:
+        print "link_rule: {}".format(link_rule)
+        print curr_rule_dict[link_rule]
+        for iptc_rule in curr_rule_dict[link_rule]:
+            chain.delete_rule(iptc_rule)
+
+    chain.table.commit()
+    chain.table.autocommit = True
+    print "end sync link rules"

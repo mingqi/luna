@@ -27,6 +27,7 @@ class RESTCallException(Exception):
     def __str__(self):
         return repr('code: %d, message: %s' % (self.status_code, self.message))
 
+
 def service_configs(uuid):
     r = requests.get('%s/v1/appconfigs/%s' %
                      (settings.JAKIRO['INNER_API_ENDPOINT'], uuid),
@@ -61,7 +62,12 @@ def getIP(domain_name):
     return socket.gethostbyname(domain_name)
 
 
-def add_allow_rule(protocol, ip, port, mac_address):
+def add_link_rule(protocol, ip, port, mac_address):
+    """
+    add iptable rule to open traffic of linked service
+    protocol, ip and port is linked service endpoint
+    mac_address is linking service instance's mac address
+    """
     chain = iptables.get_chain('filter', settings.IPTABLE_CHAIN_NAME)
     if not chain:
         chain = iptables.create_chain('filter', settings.IPTABLE_CHAIN_NAME)
@@ -80,16 +86,50 @@ def add_allow_rule(protocol, ip, port, mac_address):
     chain.append_rule(rule)
 
 
+def conv_rule(rule):
+    """
+    convert iptables rule to a concise tuple: (protocol, ip, port, mad_address)
+    """
+    rule.protocol
+    mac_match = next((m for m in rule.matches if m.name == 'mac'), None)
+    proto_match = next((m for m in rule.matches if m.name == rule.protocol), None)
+
+    if not mac_match:
+        raise Exception('not found mac match in rule')
+    if not proto_match:
+        raise Exception('not found %s match in rule' % rule.protocol)
+
+    return (rule.protocol, rule.dst.split('/')[0],
+            int(proto_match.dport), mac_match.mac_source)
+
+
+def link_rules_for_service(service_uuid, mac_address):
+    rules = []
+    configs = service_configs(service_uuid)
+    if not configs:
+        raise Exception('service {} is not exists'.format(service_uuid))
+    namespace = configs['namespace']
+    for linked_to_app_name in json.loads(configs['linked_to_apps']).keys():
+        detail = service_detail(namespace, linked_to_app_name)
+        # service_ip = getIP(detail['default_domain_name'])
+        for p in detail['instance_ports']:
+            if p['endpoint_type'] == 'internal-endpoint':
+                rules.append((p['protocol'],
+                              getIP(p['default_domain']),
+                              p['service_port'],
+                              mac_address))
+    return rules
+
+
 class Run(object):
     """
     wrap for docker run command.
-    to setup firewall to allow traffic for linked apps 
+    to setup firewall to allow traffic for linked apps
     """
 
     def __init__(self, args):
         self.args = args
         self.mac_address = randomMAC()
-        self.allowed = []
         service_uuid = None
         for i in range(len(args)):
             if args[i] == '-e' and args[i+1].startswith('MARATHON_APP_ID='):
@@ -98,22 +138,11 @@ class Run(object):
         if not service_uuid:
             raise Exception('not found MARATHON_APP_ID environment')
 
-        configs = service_configs(service_uuid)
-        if not configs:
-            raise Exception('service {} is not exists'.format(service_uuid))
-        namespace = configs['namespace']
-        for linked_to_app_name in json.loads(configs['linked_to_apps']).keys():
-            detail = service_detail(namespace, linked_to_app_name)
-            # service_ip = getIP(detail['default_domain_name'])
-            for p in detail['instance_ports']:
-                if p['endpoint_type'] == 'internal-endpoint':
-                    self.allowed.append((p['protocol'],
-                                         getIP(p['default_domain']),
-                                         p['service_port']))
+        self.rules = link_rules_for_service(service_uuid, self.mac_address)
 
     def pre_run(self):
-        for protocol, ip, port in self.allowed:
-            add_allow_rule(protocol, ip, port, self.mac_address)
+        for rule in self.rules:
+            add_link_rule(*rule)
 
     def to_args(self):
         return ['--mac-address=%s' % self.mac_address] + self.args

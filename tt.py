@@ -6,6 +6,7 @@ ROOT_DIR = abspath(join(__file__, '../'))
 sys.path.insert(0, ROOT_DIR)
 
 from luna import iptables
+from luna import wrapper
 
 # from luna import docker
 
@@ -25,15 +26,17 @@ from luna import iptables
 
 # print docker.randomMAC()
 
-from docker import Client
-c = Client(base_url='unix://var/run/docker.sock')
-print c.containers(quiet=True)
+# from docker import Client
+# c = Client(base_url='unix://var/run/docker.sock')
+# print c.containers(quiet=True)
 
 # pprint(c.inspect_container('ppsql')['NetworkSettings']['MacAddress'])
 # pprint(c.inspect_container('sad_franklin'))
 
-# chain = iptables.get_chain('filter', 'ALAUDA')
-# rule = chain.rules[0]
+chain = iptables.get_chain('filter', 'ALAUDA')
+rule = chain.rules[0]
+print rule.dst.split('/')[0]
+print wrapper.conv_rule(rule)
 # chain.delete_rule(rule)
 # chain.delete_rule(rule)
 # for rule in chain.rules:
