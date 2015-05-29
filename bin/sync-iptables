@@ -50,12 +50,13 @@ if __name__ == '__main__':
     to_add = target_rule_set - curr_rule_set
     to_remove = curr_rule_set - target_rule_set
 
+    print "rule to add: {}".format(to_add)
     for rule in to_add:
         wrapper.add_link_rule(*rule)
 
+
+    print "rule to remove: {}".format(to_remove)
     for link_rule in to_remove:
-        print "link_rule: {}".format(link_rule)
-        print curr_rule_dict[link_rule]
         for iptc_rule in curr_rule_dict[link_rule]:
             chain.delete_rule(iptc_rule)
 
