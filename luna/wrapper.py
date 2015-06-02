@@ -138,10 +138,10 @@ class Run(object):
             if args[i] == '-e' and args[i+1].startswith('MARATHON_APP_ID='):
                 service_uuid = args[i+1][len('MARATHON_APP_ID=')+1:]
 
-        if not service_uuid:
-            raise Exception('not found MARATHON_APP_ID environment')
-
-        self.rules = link_rules_for_service(service_uuid, self.mac_address)
+        if service_uuid:
+            self.rules = link_rules_for_service(service_uuid, self.mac_address)
+        else:
+            self.rules = []
 
     def pre_run(self):
         for rule in self.rules:
