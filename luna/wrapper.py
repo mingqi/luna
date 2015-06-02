@@ -4,6 +4,7 @@ import socket
 import requests
 import iptables
 import json
+import uuid
 import traceback
 from functools import partial
 from docker import Client as DockerClient
@@ -124,6 +125,14 @@ def link_rules_for_service(service_uuid, mac_address):
     return rules
 
 
+def is_uuid(id):
+    try:
+        uuid.UUID(id)
+        return True
+    except ValueError:
+        return False
+
+
 class Run(object):
     """
     wrap for docker run command.
@@ -138,7 +147,7 @@ class Run(object):
             if args[i] == '-e' and args[i+1].startswith('MARATHON_APP_ID='):
                 service_uuid = args[i+1][len('MARATHON_APP_ID=')+1:]
 
-        if service_uuid:
+        if service_uuid and is_uuid(service_uuid):
             self.rules = link_rules_for_service(service_uuid, self.mac_address)
         else:
             self.rules = []
