@@ -13,11 +13,15 @@ import traceback
 ROOT_DIR = abspath(join(__file__, '../../'))
 sys.path.insert(0, ROOT_DIR)
 
-from luna.wrapper import Run, Wait
+from luna import private_net
+from luna import force_pull
+from luna.wrapper import chain
+
 
 ACTION_WRAPPER = {
-    'run': Run,
-    'wait': Wait
+    # 'run': private_net.Run,
+    'run': chain([force_pull.Run, private_net.Run]),
+    'wait': private_net.Wait
 }
 
 
