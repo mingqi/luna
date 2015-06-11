@@ -1,14 +1,14 @@
-from luna import util
+from luna import docker_cli_parser
 import subprocess
 import sys
 
 
 class Run(object):
     def __init__(self, args):
-        args = util.parse_run_cli(args)
-        self.image = args['IMAGE']
+        opts, args = docker_cli_parser.run(args)
+        self.image = args[0]
 
     def pre_run(self):
         print "to force pull docker image before run {}".format(self.image)
-        subprocess.check_call(('docker pull '+self.image).split(),
-                              stdout=sys.stdout, stderr=sys.stderr)
+        subprocess.check_output(('docker pull '+self.image).split(),
+                              stderr=sys.stderr)
