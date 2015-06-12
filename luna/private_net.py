@@ -112,7 +112,8 @@ def link_rules_for_service(service_uuid, mac_address):
     namespace = configs['namespace']
     for linked_to_app_name in json.loads(configs['linked_to_apps']).keys():
         detail = service_detail(namespace, linked_to_app_name)
-        # service_ip = getIP(detail['default_domain_name'])
+        if not detail:
+            continue
         for p in detail['instance_ports']:
             endpoint_type = p.get('endpoint_type', None)
             if not endpoint_type:
