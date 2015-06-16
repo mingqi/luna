@@ -5,4 +5,4 @@ JAKIRO = {
     'USER': 'sys_admin',
     'PASSWORD': '07Apples'
 }
-DOCKER_API_VERSION='1.17'
+DOCKER_API_VERSION = '1.17'
