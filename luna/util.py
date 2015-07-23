@@ -1,58 +1,16 @@
-
-from docopt import docopt, DocoptExit
-
-
-def parse_run_cli(args):
-    doc = """
-Usage: run [--attach=ATTACH]... 
-                 [--dns=DNS]... 
-                 [--dns-search=DNS]... 
-                 [--env=ENV]...
-                 [env-file=ENVFILE]...
-                 [--expose=EXPOSE]...
-                 [--link=LINK]...
-                 [--lxc-conf=LXCCONF]...
-                 [--publish=PUBLISH]...
-                 [--volume=VOLUME]...
-                 [--volumes-from=]...
-                 [options] IMAGE [CMD ...]
+import time
 
 
-Options:
-    -a --attach=ATTACH
-    -c --cpu-shares=CPU
-    --cidfile=CIDFILE
-    --cpuset=CPUSET
-    -d
-    --detach=DETACH
-    --dns=DNS
-    --dns-search=DNSSEARCH
-    -e --env=ENV
-    --entrypoint=ENTRYPOINT
-    --env-file=ENVFILE
-    --expose=EXPOSE
-    -h --hostname=HOSTNAME
-    -i
-    --interactive=INTERACTIVE
-    --link=LINK
-    --lxc-conf=LXC
-    -m --memory=MEMORY
-    --name=NAME
-    --net=NET
-    -P
-    --publish-all=PUBLISHALL
-    -p --publish=PUBLISH
-    --privileged=PRIVILEGED
-    --rm=RM
-    --sig-proxy=PROXY
-    -t
-    --tty=TTY
-    -u --user=USER
-    -v --volume=VOLUME
-    --volumes-from=VOLUMES
-    -w --workdir=WORKDIR
-    """
-    try:
-        return docopt(doc, args, help=False, version=None)
-    except DocoptExit:
-        raise Exception('failed to parse docker run arguments')
+def try_until(try_fn, check_fn, sleep_sec, timeout_sec):
+    time.sleep(sleep_sec)
+    start_time = time.time()
+    while True:
+        result = try_fn()
+        if check_fn(result):
+            return result
+        else:
+            curr = time.time()
+            if timeout_sec > 0 and curr - start_time > timeout_sec:
+                raise Exception("timeout for %i" % timeout_sec)
+            else:
+                time.sleep(sleep_sec)

@@ -9,20 +9,27 @@ from os.path import join, abspath
 import sys
 import subprocess
 import traceback
+import logging
 
 ROOT_DIR = abspath(join(__file__, '../../'))
 sys.path.insert(0, ROOT_DIR)
 
 from luna import private_net
 from luna import force_pull
+from luna import volume
 from luna.wrapper import chain
 
+
+FORMAT = '%(levelname)-6s %(asctime)-15s %(name)s: %(message)s'
+logging.basicConfig(format=FORMAT, level=logging.DEBUG, stream=sys.stdout)
 
 ACTION_WRAPPER = {
     # 'run': private_net.Run,
     'run': chain([force_pull.Run, private_net.Run]),
-    'wait': private_net.Wait
+    'wait': chain([private_net.Wait, volume.Wait])
 }
+
+logger = logging.getLogger(__name__)
 
 
 class EmptyWrapper(object):
@@ -32,7 +39,7 @@ class EmptyWrapper(object):
 
 
 if __name__ == '__main__':
-    print "this is docker wrapper"
+    "this is docker wrapper"
     if len(sys.argv) < 2:
         print 'action is missing'
         print 'usage: docker ACTION ...'
