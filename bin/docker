@@ -25,7 +25,7 @@ logging.basicConfig(format=FORMAT, level=logging.DEBUG, stream=sys.stdout)
 
 ACTION_WRAPPER = {
     # 'run': private_net.Run,
-    'run': chain([force_pull.Run, private_net.Run]),
+    'run': chain([force_pull.Run, private_net.Run, volume.Run]),
     'wait': chain([private_net.Wait, volume.Wait])
 }
 

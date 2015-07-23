@@ -1,4 +1,5 @@
 import time
+import boto.utils
 
 
 def try_until(try_fn, check_fn, sleep_sec, timeout_sec):
@@ -14,3 +15,10 @@ def try_until(try_fn, check_fn, sleep_sec, timeout_sec):
                 raise Exception("timeout for %i" % timeout_sec)
             else:
                 time.sleep(sleep_sec)
+
+
+def my_instance_id():
+    meta = boto.utils.get_instance_metadata()
+    if not meta:
+        return None
+    return meta['instance-id']
