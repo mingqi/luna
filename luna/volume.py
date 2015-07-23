@@ -69,7 +69,7 @@ class Run(object):
         self.app_volumes = []
         if app_id:
             for volume in opts.get('volume', []):
-                local_path, container_path = volume.split(':')
+                local_path, container_path = volume.split(':')[0:2]
                 local_path = local_path.rstrip('/')
                 container_path = container_path.rstrip('/')
                 if local_path != '/app_volume/ebs/%s%s/volume' % (app_id, container_path):
