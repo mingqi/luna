@@ -2,7 +2,6 @@
 
 from os.path import join, abspath
 import sys
-from pprint import pprint
 
 ROOT_DIR = abspath(join(__file__, '../../'))
 sys.path.insert(0, ROOT_DIR)
@@ -10,7 +9,7 @@ sys.path.insert(0, ROOT_DIR)
 from luna import iptables
 from docker import Client as DockerClient
 import settings
-from luna import wrapper
+from luna import private_net
 
 docker = DockerClient(base_url='unix://var/run/docker.sock', version=settings.DOCKER_API_VERSION)
 
@@ -32,7 +31,7 @@ if __name__ == '__main__':
     for cid in container_ids:
         uuid_mac_address = _ext_service_uuid_mac_addr(cid)
         if uuid_mac_address:
-            target_rule_set.update(wrapper.link_rules_for_service(*uuid_mac_address))
+            target_rule_set.update(private_net.link_rules_for_service(*uuid_mac_address))
 
     curr_rule_dict = dict()
     chain = iptables.get_chain('filter', settings.IPTABLE_CHAIN_NAME)
@@ -40,7 +39,7 @@ if __name__ == '__main__':
         chain = iptables.create_chain('filter', settings.IPTABLE_CHAIN_NAME)
     chain.table.autocommit = False
     for rule in chain.rules:
-        r = wrapper.conv_rule(rule)
+        r = private_net.conv_rule(rule)
         if r not in curr_rule_dict:
             curr_rule_dict[r] = []
         curr_rule_dict[r].append(rule)
@@ -52,7 +51,7 @@ if __name__ == '__main__':
 
     print "rule to add: {}".format(to_add)
     for rule in to_add:
-        wrapper.add_link_rule(*rule)
+        private_net.add_link_rule(*rule)
 
 
     print "rule to remove: {}".format(to_remove)
