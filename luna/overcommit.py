@@ -9,7 +9,7 @@ class Run(object):
         self.mem_oversell_rate = 1
         for env in opts.get('env', []):
             name, value = env.split('=')
-            if name == '__ALAUDA_MEM_OVERSELL_RATE__':
+            if name == '__ALAUDA_OVER_COMMIT_MEM_RATE__':
                 self.mem_oversell_rate = float(value)
         self.memory = int(opts.get('memory', None))
 

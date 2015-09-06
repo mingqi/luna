@@ -15,7 +15,7 @@ ROOT_DIR = abspath(join(__file__, '../../'))
 sys.path.insert(0, ROOT_DIR)
 
 from luna import private_net
-from luna import force_pull, oversell
+from luna import force_pull, overcommit
 from luna import volume
 from luna.wrapper import chain
 
@@ -25,7 +25,7 @@ logging.basicConfig(format=FORMAT, level=logging.DEBUG, stream=sys.stdout)
 
 ACTION_WRAPPER = {
     # 'run': private_net.Run,
-    'run': chain([oversell.Run, private_net.Run, volume.Run]),
+    'run': chain([overcommit.Run, private_net.Run, volume.Run]),
     'wait': chain([private_net.Wait, volume.Wait])
 }
 
@@ -45,10 +45,10 @@ if __name__ == '__main__':
         print 'usage: docker ACTION ...'
         sys.exit(1)
 
-    log = open('/var/log/luna.log', 'a')
-    log.write(' '.join(sys.argv))
-    log.write('\n')
-    log.close()
+    # log = open('/var/log/luna.log', 'a')
+    # log.write(' '.join(sys.argv))
+    # log.write('\n')
+    # log.close()
     action = sys.argv[1]
     if action in ACTION_WRAPPER:
         wrapper_builder = ACTION_WRAPPER[action]
