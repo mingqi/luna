@@ -63,7 +63,7 @@ class Run(object):
         opts, args = docker_cli_parser.run(args)
         app_id = None
         for env in opts.get('env', []):
-            name, value = env.split('=')
+            name, value = env.split('=', 1)
             if name == 'MARATHON_APP_ID':
                 app_id = value.strip('/')
         self.app_volumes = []
