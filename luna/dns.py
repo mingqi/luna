@@ -12,3 +12,4 @@ class Run(object):
         for dns in reversed(settings.DNS):
             self.args.insert(0, dns)
             self.args.insert(0, '--dns')
+        return self.args
