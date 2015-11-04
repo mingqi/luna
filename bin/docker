@@ -20,6 +20,7 @@ from luna import private_net
 from luna import dns
 from luna import volume
 from luna.wrapper import chain
+import settings
 
 LOGGING = {
     'version': 1,
@@ -51,7 +52,7 @@ LOGGING = {
     },
     'root': {
         'level': 'DEBUG',
-        'handlers': ['console', 'file']
+        'handlers': settings.LOGGING_HANDLERS
     }
 }
 
