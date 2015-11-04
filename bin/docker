@@ -15,7 +15,8 @@ ROOT_DIR = abspath(join(__file__, '../../'))
 sys.path.insert(0, ROOT_DIR)
 
 from luna import private_net
-from luna import force_pull, overcommit
+# from luna import force_pull, overcommit
+from luna import dns
 from luna import volume
 from luna.wrapper import chain
 
@@ -24,8 +25,7 @@ FORMAT = '%(levelname)-6s %(asctime)-15s %(name)s: %(message)s'
 logging.basicConfig(format=FORMAT, level=logging.DEBUG, stream=sys.stdout)
 
 ACTION_WRAPPER = {
-    # 'run': private_net.Run,
-    'run': chain([private_net.Run, volume.Run]),
+    'run': chain([private_net.Run, volume.Run, dns.Run]),
     'wait': chain([private_net.Wait, volume.Wait])
 }
 

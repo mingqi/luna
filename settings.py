@@ -7,3 +7,4 @@ JAKIRO = {
 }
 DOCKER_API_VERSION = '1.17'
 LINA_ENDPOINT = "lina.int.alauda.club:8080"
+DNS = ['8.8.8.8', '4.4.4.4']
