@@ -52,7 +52,7 @@ LOGGING = {
     },
     'root': {
         'level': 'DEBUG',
-        'handlers': settings.LOGGING_HANDLERS
+        'handlers': ['file']
     }
 }
 
