@@ -44,11 +44,15 @@ def service_configs(uuid):
     return r.json()
 
 
-def service_detail(namespace, name):
-    r = requests.get('%s/v1/services/%s/%s' %
-                     (settings.JAKIRO['API_ENDPOINT'], namespace, name),
-                     auth=(settings.JAKIRO['USER'],
-                           settings.JAKIRO['PASSWORD']))
+def service_detail(namespace, name, application=None):
+    if application:
+        url = '%s/v1/services/%s/%s?application=%s' % \
+            (settings.JAKIRO['API_ENDPOINT'], namespace, name, application)
+    else:
+        url = '%s/v1/services/%s/%s' % (settings.JAKIRO['API_ENDPOINT'],
+                                        namespace, name)
+    r = requests.get(url, auth=(settings.JAKIRO['USER'],
+                                settings.JAKIRO['PASSWORD']))
 
     if r.status_code >= 400 and r.status_code < 500:
         return None
@@ -110,8 +114,9 @@ def link_rules_for_service(service_uuid, mac_address):
     if not configs:
         raise Exception('service {} is not exists'.format(service_uuid))
     namespace = configs['namespace']
+    application = configs.get('application')
     for linked_to_app_name in json.loads(configs['linked_to_apps']).keys():
-        detail = service_detail(namespace, linked_to_app_name)
+        detail = service_detail(namespace, linked_to_app_name, application)
         if not detail:
             continue
         for p in detail['instance_ports']:
