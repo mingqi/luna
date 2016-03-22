@@ -19,50 +19,15 @@ from luna import private_net
 # from luna import force_pull, overcommit
 from luna import dns
 from luna import volume
+from luna import log_driver
+from luna import sandbox
 from luna.wrapper import chain
 import settings
-
-LOGGING = {
-    'version': 1,
-    'formatters': {
-        'standard': {
-            'format': '%(asctime)-15s %(name)s [%(levelname)s]: %(message)s'
-        }
-    },
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-            'level': 'DEBUG',
-            'formatter': 'standard',
-            'stream': sys.stdout
-        },
-        'file': {
-            'class': 'logging.handlers.RotatingFileHandler',
-            'formatter': 'standard',
-            'filename': '/var/log/luna.log',
-            'maxBytes': 1024 * 1024 * 50,
-            'backupCount': 5
-        }
-    },
-    'loggers': {
-        'luna': {
-            'level': 'DEBUG',
-            'propagate': 1
-        }
-    },
-    'root': {
-        'level': 'DEBUG',
-        'handlers': ['file']
-    }
-}
-
-# FORMAT = '%(levelname)-6s %(asctime)-15s %(name)s: %(message)s'
-# logging.basicConfig()
-logging.config.dictConfig(LOGGING)
+import importlib
 
 ACTION_WRAPPER = {
-    'run': chain([private_net.Run, volume.Run, dns.Run]),
-    'wait': chain([private_net.Wait, volume.Wait])
+    'run': chain([globals()[x].Run for x in settings.WRAPPERS['run'] if x != '']),
+    'wait': chain([globals()[x].Wait for x in settings.WRAPPERS['wait'] if x != ''])
 }
 
 logger = logging.getLogger(__name__)
@@ -85,15 +50,16 @@ if __name__ == '__main__':
     # log.write(' '.join(sys.argv))
     # log.write('\n')
     # log.close()
-    action = sys.argv[1]
-    logger.info("luna/docker %s" % (' '.join(sys.argv[1:])))
+    action = sys.argv[1] if sys.argv[1] != '-H' else sys.argv[3]
+    cli_args = sys.argv[2:] if sys.argv[1] != '-H' else sys.argv[4:]
+    logger.info("luna/docker %s" % (' '.join(sys.argv[1:] if sys.argv[1] != '-H' else sys.argv[3:])))
     if action in ACTION_WRAPPER:
         wrapper_builder = ACTION_WRAPPER[action]
     else:
         wrapper_builder = EmptyWrapper
 
     try:
-        wrapper = wrapper_builder(sys.argv[2:])
+        wrapper = wrapper_builder(cli_args)
 
         if hasattr(wrapper, 'pre_run'):
             wrapper.pre_run()
@@ -101,7 +67,7 @@ if __name__ == '__main__':
         if hasattr(wrapper, 'to_args'):
             args = wrapper.to_args()
         else:
-            args = sys.argv[2:]
+            args = cli_args
         logger.info("docker %s %s" % (action, ' '.join(args)))
         result_code = subprocess.call(['docker', action] + args,
                                       stdout=sys.stdout, stderr=sys.stderr)

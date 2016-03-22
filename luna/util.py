@@ -1,5 +1,7 @@
 import time
+import json
 import boto.utils
+import socket
 
 
 def try_until(try_fn, check_fn, sleep_sec, timeout_sec):
@@ -22,3 +24,21 @@ def my_instance_id():
     if not meta:
         return None
     return meta['instance-id']
+
+
+def flush_ops_logs(path, app_id, instance_id, container_name, content, log_type):
+    # This func is not Thread-safey.
+    data = {
+        "id": "{:.10f}".format(time.time()).replace('.', ''),
+        "time": int("{:.6f}".format(time.time()).replace('.', '')),
+        'log_type': log_type,
+        'app_id': app_id,
+        'instance_id': instance_id,
+        'log_data': content,
+        'log_level': 0,
+        "machine": socket.gethostname(),
+        'container_name': container_name
+    }
+    fp = open(path, 'a+')
+    fp.write(json.dumps(data))
+    fp.close()
