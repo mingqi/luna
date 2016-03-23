@@ -1,5 +1,56 @@
 import sys
+import logging
+import os
 
+DOCKER_OPS_LOGS_FILE='/ops_logs/docker_ops.log'
+
+WRAPPERS = {
+    'run': os.getenv('RUN_WRAPPER', 'sandbox;private_net;volume;dns;log_driver').split(';'),
+    'wait': os.getenv('WAIT_WRAPPER', 'private_net;volume').split(';')
+}
+
+DOCKER_LOG_SETTINGS = {
+    'driver': os.getenv('DOCKER_LOG_DRIVER', 'fluentd'),
+    'host': os.getenv('FLUENTD_ADDRESS', 'localhost:24224')
+}
+
+LOGGING = {
+    'version': 1,
+    'formatters': {
+        'standard': {
+            'format': '%(asctime)-15s %(name)s [%(levelname)s]: %(message)s'
+        }
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'level': 'DEBUG',
+            'formatter': 'standard',
+            'stream': sys.stdout
+        },
+        'file': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'formatter': 'standard',
+            'filename': '/var/log/luna.log',
+            'maxBytes': 1024 * 1024 * 50,
+            'backupCount': 5
+        }
+    },
+    'loggers': {
+        'luna': {
+            'level': 'DEBUG',
+            'propagate': 1
+        }
+    },
+    'root': {
+        'level': 'DEBUG',
+        'handlers': ['file']
+    }
+}
+
+# FORMAT = '%(levelname)-6s %(asctime)-15s %(name)s: %(message)s'
+# logging.basicConfig()
+logging.config.dictConfig(LOGGING)
 
 IPTABLE_CHAIN_NAME = 'ALAUDA_LINK'
 JAKIRO = {
