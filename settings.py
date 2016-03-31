@@ -1,12 +1,13 @@
 import sys
 import logging
+import logging.config
 import os
 
 DOCKER_OPS_LOGS_FILE='/ops_logs/docker_ops.log'
 
 WRAPPERS = {
-    'run': os.getenv('RUN_WRAPPER', 'sandbox;private_net;volume;dns;log_driver').split(';'),
-    'wait': os.getenv('WAIT_WRAPPER', 'private_net;volume').split(';')
+    'run': os.getenv('RUN_WRAPPER', 'sandbox;log_driver').split(';'),
+    'wait': os.getenv('WAIT_WRAPPER', '').split(';')
 }
 
 DOCKER_LOG_SETTINGS = {
