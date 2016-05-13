@@ -3,10 +3,10 @@ import logging
 import logging.config
 import os
 
-DOCKER_OPS_LOGS_FILE='/ops_logs/docker_ops.log'
+DOCKER_OPS_LOGS_FILE = '/ops_logs/docker_ops.log'
 
 WRAPPERS = {
-    'run': os.getenv('RUN_WRAPPER', 'sandbox;log_driver').split(';'),
+    'run': os.getenv('RUN_WRAPPER', 'sandbox;log_driver;overcommit').split(';'),
     'wait': os.getenv('WAIT_WRAPPER', '').split(';')
 }
 

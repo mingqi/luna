@@ -96,7 +96,8 @@ class Run(object):
 
             curr_mounted_device = linux.where_mount(mount_point)
             if curr_mounted_device:
-                logger.info('%s already mount by %s, umounting it' % (mount_point, curr_mounted_device))
+                logger.info('%s already mount by %s, umounting it' % (mount_point,
+                                                                      curr_mounted_device))
                 if not linux.umount(curr_mounted_device):
                     raise Exception('failed to umount occupied mount point')
             if not linux.mount(device, mount_point):
@@ -147,6 +148,7 @@ class Wait(object):
             logger.info("detach ebs volume %s" % ebs_volume_id)
             if not lina.detach_ebs_volume(ebs_volume_id):
                 logger.error('failed to detach EBS volume %s' % ebs_volume_id)
+
             def _try():
                 return lina.get_ebs_volume(ebs_info['ebs_volume_id'])
 

@@ -1,11 +1,11 @@
 import functools
 
 
-def give_default_methods(Wrapper):
+def give_default_methods(wrapper):
     class DefaultMethods(object):
         def __init__(self, args):
             self.args = args
-            self.wrapper = Wrapper(args)
+            self.wrapper = wrapper(args)
 
         def to_args(self):
             if not hasattr(self.wrapper, 'to_args'):
@@ -24,14 +24,14 @@ def give_default_methods(Wrapper):
     return DefaultMethods
 
 
-def chain(Wrappers):
+def chain(wrappers):
 
-    Wrappers = map(give_default_methods, Wrappers)
+    wrappers = map(give_default_methods, wrappers)
 
     class WrapWrapper(object):
-        def __init__(self, Wrappers, args):
+        def __init__(self, wrappers, args):
             self.wrappers = []
-            for Wrapper in Wrappers:
+            for Wrapper in wrappers:
                 wrapper = Wrapper(args)
                 self.wrappers.append(wrapper)
                 args = wrapper.to_args()
@@ -49,5 +49,4 @@ def chain(Wrappers):
             for wrapper in reversed(self.wrappers):
                 wrapper.post_run()
 
-    return functools.partial(WrapWrapper, Wrappers)
-
+    return functools.partial(WrapWrapper, wrappers)
