@@ -81,7 +81,7 @@ class LinaClient(object):
     def detach_ebs_volume(self, ebs_volume_id):
         headers = {'content-type': 'application/json'}
         r = requests.put('http://%s/api/v1/volumes/ebs/%s/detach' %
-                         (self.host,ebs_volume_id),
+                         (self.host, ebs_volume_id),
                          headers=headers)
 
         if r.status_code == 200:

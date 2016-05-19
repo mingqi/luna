@@ -3,6 +3,7 @@
 from os import path
 import sys
 import unittest
+from luna.tests import test_wrapper
 
 import logging
 
@@ -18,7 +19,6 @@ sys.path.insert(0, ROOT_DIR)
 # unittest.main(module='lina.tests.test_workflow')
 # unittest.main(module='lina.tests.test_volume')
 
-from luna.tests import test_wrapper
 
 suite = unittest.TestSuite()
 suite.addTest(unittest.TestLoader().loadTestsFromModule(test_wrapper))

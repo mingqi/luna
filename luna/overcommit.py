@@ -1,20 +1,27 @@
-from luna import docker_cli_parser
+# from luna import docker_cli_parser
 
 
 class Run(object):
 
     def __init__(self, args):
         self.args = args
-        opts, args = docker_cli_parser.run(args)
-        self.mem_oversell_rate = 1
-        for env in opts.get('env', []):
-            name, value = env.split('=')
-            if name == '__ALAUDA_OVER_COMMIT_MEM_RATE__':
-                self.mem_oversell_rate = float(value)
-        self.memory = int(opts.get('memory', None))
+        self.mem_overcommit_str = ""
+        self.cpu_overcommit_str = ""
+        for i in range(len(args) - 1):
+            if args[i] == '-e' and args[i+1].startswith('__ALAUDA_OVER_COMMIT_MEM__='):
+                name, value = args[i+1].split('=')
+                self.mem_overcommit_str = filter(str.isdigit, value)
+            if args[i] == '-e' and args[i+1].startswith('__ALAUDA_OVER_COMMIT_CPU__='):
+                name, value = args[i+1].split('=')
+                self.cpu_overcommit_str = value
 
     def to_args(self):
-        if self.memory:
-            self.memory = int(self.memory * self.mem_oversell_rate)
-            self.args[self.args.index('-m') + 1] = str(self.memory)
+        if self.mem_overcommit_str:
+            pos_m = self.args.index('-m') + 1
+            self.args[pos_m] = str(int(float(self.mem_overcommit_str))) + 'M'
+
+        if self.cpu_overcommit_str:
+            pos_c = self.args.index('-c') + 1
+            self.args[pos_c] = str(int(float(self.cpu_overcommit_str)))
+
         return self.args

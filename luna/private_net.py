@@ -10,7 +10,7 @@ from functools import partial
 from docker import Client as DockerClient
 
 
-def randomMAC():
+def random_mac():
     mac = [0x02, 0x42, 0xac, 0x11,
            random.randint(0x00, 0xff),
            random.randint(0x00, 0xff)]
@@ -63,7 +63,7 @@ def service_detail(namespace, name, application=None):
     return r.json()
 
 
-def getIP(domain_name):
+def get_ip(domain_name):
     return socket.gethostbyname(domain_name)
 
 
@@ -125,7 +125,7 @@ def link_rules_for_service(service_uuid, mac_address):
                 continue
             if endpoint_type == 'internal-endpoint':
                 rules.append((p['protocol'],
-                              getIP(p['default_domain']),
+                              get_ip(p['default_domain']),
                               p['service_port'],
                               mac_address))
     return rules
@@ -147,7 +147,7 @@ class Run(object):
 
     def __init__(self, args):
         self.args = args
-        self.mac_address = randomMAC()
+        self.mac_address = random_mac()
         service_uuid = None
         for i in range(len(args)):
             if args[i] == '-e' and args[i+1].startswith('MARATHON_APP_ID='):

@@ -26,7 +26,8 @@ class Run(object):
             log_args.append('--log-opt')
             log_args.append('fluentd-address={}'.format(settings.DOCKER_LOG_SETTINGS['host']))
             log_args.append('--log-opt')
-            log_args.append('fluentd-tag=docker.{}.{}.{}'.format(self.app_id, self.instance_id, self.container_name))
+            log_args.append('fluentd-tag=docker.{}.{}.{}'.format(self.app_id, self.instance_id,
+                                                                 self.container_name))
             log_args.extend(self.args)
             return log_args
         return self.args

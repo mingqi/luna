@@ -11,6 +11,7 @@ def _parse_bool(s):
 
     raise Exception('%s is not a boolean value' % s)
 
+
 def _parse_single_option(arg):
     Options = namedtuple('Options', ['type', 'names', 'value'])
 

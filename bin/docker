@@ -21,6 +21,7 @@ from luna import dns
 from luna import volume
 from luna import log_driver
 from luna import sandbox
+from luna import overcommit
 from luna.wrapper import chain
 import settings
 import importlib

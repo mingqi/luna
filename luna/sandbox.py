@@ -3,9 +3,8 @@ Created on 2016-03-21
 
 @author: sincera
 '''
+# from luna import docker_cli_parser
 
-
-from luna import docker_cli_parser
 
 class Run(object):
     def __init__(self, args):

@@ -10,5 +10,4 @@ class Run(object):
 
     def pre_run(self):
         print "to force pull docker image before run {}".format(self.image)
-        subprocess.check_output(('docker pull '+self.image).split(),
-                              stderr=sys.stderr)
+        subprocess.check_output(('docker pull '+self.image).split(), stderr=sys.stderr)
