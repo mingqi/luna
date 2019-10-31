@@ -1,4 +1,4 @@
 python-iptables
-requests==2.4.3
+requests==2.20.0
 docker-py
 boto>=2.36
